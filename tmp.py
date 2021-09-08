@@ -10,7 +10,7 @@ res_file = '/home/peter/workspace/projects/Fashion/TransPose/output/deepfashion2
 # keys =res.keys()
 # print(res)
 
-
+a = 'asdfadf'
 coco = COCO('data/deep2_agg81_debug/annotations/validation.json')
 coco_dt = coco.loadRes(res_file)
 
