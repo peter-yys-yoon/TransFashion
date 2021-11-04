@@ -12,14 +12,12 @@ PRINT_FREQ: 100
 
 DATASET:
   COLOR_RGB: true
-#  DATASET: 'deepfashion2agg81kps'
-  DATASET: 'deepfashion2'
+  DATASET: 'deepfashion2agg81kps'
   DATA_FORMAT: jpg
   FLIP: true
   NUM_JOINTS_HALF_BODY: 8
   PROB_HALF_BODY: 0.0
-#  ROOT: 'data/deepfashion2_agg81kps/'
-  ROOT: 'data/deepfashion2/'
+  ROOT: 'data/deepfashion2_agg81kps_debug/'
   ROT_FACTOR: 30
   SCALE_FACTOR: 0.25
   TEST_SET: 'validation'
@@ -35,7 +33,7 @@ MODEL:
   # #
   INIT_WEIGHTS: true
   NAME: transpose_h
-  NUM_JOINTS: 294
+  NUM_JOINTS: 81
   PRETRAINED: 'models/pytorch/imagenet/hrnet_w48-8ef0771d.pth'
   TARGET_TYPE: gaussian
   IMAGE_SIZE:

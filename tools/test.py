@@ -31,7 +31,7 @@ from utils.utils import create_logger
 import dataset
 import models
 
-
+import platform
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     # general
@@ -69,6 +69,9 @@ def parse_args():
 def main():
     args = parse_args()
     update_config(cfg, args)
+    print(type(cfg))
+    print(cfg)
+    quit()
 
     logger, final_output_dir, tb_log_dir = create_logger(
         cfg, args.cfg, 'valid')
@@ -112,7 +115,12 @@ def main():
     #     print(model.pos_embedding.shape)
     ######### FOR UNSeen Resolutions  #########
 
-    model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
+    if platform.node() =='puma':
+        gpus = (0,)
+    else:
+        gpus = cfg.GPUS
+
+    model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 
     # define loss function (criterion) and optimizer
     criterion = JointsMSELoss(
@@ -132,7 +140,7 @@ def main():
     )
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset,
-        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=cfg.WORKERS,
         pin_memory=True

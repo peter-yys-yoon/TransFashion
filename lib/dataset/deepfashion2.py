@@ -179,8 +179,11 @@ class Deepfashion2Dataset(JointsDataset):
     def _get_ann_file_keypoint(self):
         """ self.root / annotations / person_keypoints_train2017.json """
         prefix = self.image_set # train, validation, test
+
+        # prefix += '_debug'
+        
         return os.path.join(
-            self.root, 'annotations', prefix + '_coco.json'
+            self.root, 'annotations', prefix + '.json'
         )
 
     def _load_image_set_index(self):
