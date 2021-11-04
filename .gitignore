@@ -135,4 +135,8 @@ venv.bak/
 dmypy.json
 
 # Pyre type checker
-.pyre/
+pyre/
+.idea
+run.sh
+tmp.py
+DeepFashion2/
