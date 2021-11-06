@@ -205,26 +205,28 @@ def main():
               final_output_dir, tb_log_dir, writer_dict)
 
         # evaluate on validation set
-        perf_indicator = validate(
-            cfg, valid_loader, valid_dataset, model, criterion,
-            final_output_dir, tb_log_dir, writer_dict
-        )
+        # perf_indicator = validate(
+        #     cfg, valid_loader, valid_dataset, model, criterion,
+        #     final_output_dir, tb_log_dir, writer_dict
+        # )
         
         lr_scheduler.step()
 
-        if perf_indicator >= best_perf:
-            best_perf = perf_indicator
-            best_model = True
-        else:
-            best_model = False
+        # if perf_indicator >= best_perf:
+        #     best_perf = perf_indicator
+        #     best_model = True
+        # else:
+        #     best_model = False
 
+        best_model = False
         logger.info('=> saving checkpoint to {}'.format(final_output_dir))
         save_checkpoint({
             'epoch': epoch + 1,
             'model': cfg.MODEL.NAME,
             'state_dict': model.state_dict(),
             'best_state_dict': model.module.state_dict(),
-            'perf': perf_indicator,
+            'perf': 0,
+            # 'perf': perf_indicator,
             'optimizer': optimizer.state_dict(),
             'train_global_steps': writer_dict['train_global_steps'],
             'valid_global_steps': writer_dict['valid_global_steps'],

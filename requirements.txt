@@ -1,4 +1,7 @@
 #pycocotools
+torchsummary
+tqdm
+numpy==1.17.0
 EasyDict==1.7
 opencv-python
 shapely
