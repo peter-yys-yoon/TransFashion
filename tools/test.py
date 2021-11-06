@@ -69,9 +69,6 @@ def parse_args():
 def main():
     args = parse_args()
     update_config(cfg, args)
-    print(type(cfg))
-    print(cfg)
-    quit()
 
     logger, final_output_dir, tb_log_dir = create_logger(
         cfg, args.cfg, 'valid')
@@ -87,13 +84,29 @@ def main():
     model = eval('models.'+cfg.MODEL.NAME+'.get_pose_net')(
         cfg, is_train=False
     )
+    if platform.node() =='puma':
+        gpus = (0,)
+    else:
+        gpus = cfg.GPUS
+
+    model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 
     if cfg.TEST.MODEL_FILE:
         logger.info('=> loading model from {}'.format(cfg.TEST.MODEL_FILE))
         ckpt_state_dict = torch.load(cfg.TEST.MODEL_FILE)
+        # print(ckpt_state_dict.keys())
         # print(ckpt_state_dict['pos_embedding'])  # FOR UNSeen Resolutions
         # ckpt_state_dict.pop('pos_embedding') # FOR UNSeen Resolutions
-        model.load_state_dict(ckpt_state_dict, strict=True)   #  strict=False FOR UNSeen Resolutions
+        
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in ckpt_state_dict.items():
+            name = k[7:] # remove `module.`
+            new_state_dict[name] = v
+
+        # model.load_state_dict(new_state_dict)   #  strict=False FOR UNSeen Resolutions
+        model.load_state_dict(ckpt_state_dict['state_dict'])   #  strict=False FOR UNSeen Resolutions
+        # model.load_state_dict(ckpt_state_dict, strict=True)   #  strict=False FOR UNSeen Resolutions
     else:
         model_state_file = os.path.join(
             final_output_dir, 'final_state.pth'
@@ -115,12 +128,7 @@ def main():
     #     print(model.pos_embedding.shape)
     ######### FOR UNSeen Resolutions  #########
 
-    if platform.node() =='puma':
-        gpus = (0,)
-    else:
-        gpus = cfg.GPUS
 
-    model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 
     # define loss function (criterion) and optimizer
     criterion = JointsMSELoss(
@@ -152,4 +160,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()

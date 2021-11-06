@@ -12,6 +12,8 @@ from collections import defaultdict
 from collections import OrderedDict
 import logging
 import os
+# from platform import platform
+import platform
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -302,7 +304,12 @@ class Deepfashion2Dataset(JointsDataset):
     def image_path_from_index(self, index):
         """modified for deepfashion2"""
         file_name = str(index).zfill(6)+'.jpg'
-        image_path = os.path.join(self.root, 'images', self.image_set, file_name)
+        # here fixed
+        if platform.node()=='puma': 
+            _root = '/home/peter/dataset/fashion2'
+            image_path = os.path.join(_root, 'images', self.image_set, file_name)
+        else:
+            image_path = os.path.join(self.root, 'images', self.image_set, file_name)
         return image_path
 
     def _load_coco_person_detection_results(self):

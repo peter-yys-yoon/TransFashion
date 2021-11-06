@@ -82,6 +82,8 @@ def save_checkpoint(states, is_best, output_dir,
     torch.save(states, os.path.join(output_dir, filename))
 
     torch.save(states, os.path.join(output_dir, f'checkpoint_{str(ep).zfill(3)}.pth'))
+
+    
     if is_best and 'state_dict' in states:
         torch.save(states['best_state_dict'],
                    os.path.join(output_dir, 'model_best.pth'))
