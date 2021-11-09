@@ -136,13 +136,13 @@ def main():
             normalize,
         ])
     )
-    valid_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
-        cfg, cfg.DATASET.ROOT, cfg.DATASET.TEST_SET, False,
-        transforms.Compose([
-            transforms.ToTensor(),
-            normalize,
-        ])
-    )
+    # valid_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
+    #     cfg, cfg.DATASET.ROOT, cfg.DATASET.TEST_SET, False,
+    #     transforms.Compose([
+    #         transforms.ToTensor(),
+    #         normalize,
+    #     ])
+    # )
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -151,13 +151,13 @@ def main():
         num_workers=cfg.WORKERS,
         pin_memory=cfg.PIN_MEMORY
     )
-    valid_loader = torch.utils.data.DataLoader(
-        valid_dataset,
-        batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
-        shuffle=False,
-        num_workers=cfg.WORKERS,
-        pin_memory=cfg.PIN_MEMORY
-    )
+    # valid_loader = torch.utils.data.DataLoader(
+    #     valid_dataset,
+    #     batch_size=cfg.TEST.BATCH_SIZE_PER_GPU*len(cfg.GPUS),
+    #     shuffle=False,
+    #     num_workers=cfg.WORKERS,
+    #     pin_memory=cfg.PIN_MEMORY
+    # )
 
     best_perf = 0.0
     best_model = False

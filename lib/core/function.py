@@ -13,6 +13,7 @@ import time
 import logging
 import os
 from datetime import datetime
+
 import numpy as np
 import torch
 
@@ -20,7 +21,8 @@ from core.evaluate import accuracy
 from core.inference import get_final_preds
 from utils.transforms import flip_back
 from utils.vis import save_debug_images
-
+# from lib import models
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +92,8 @@ def train(config, train_loader, model, criterion, optimizer, epoch,
             global_steps = writer_dict['train_global_steps']
             writer.add_scalar('train_loss', losses.val, global_steps)
             writer.add_scalar('train_acc', acc.val, global_steps)
+            writer.add_scalar('train_loss_avg', losses.avg, global_steps)
+            writer.add_scalar('train_acc_avg', acc.avg, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1
 
             prefix = '{}_{}'.format(os.path.join(output_dir, 'train'), i)
@@ -97,7 +101,7 @@ def train(config, train_loader, model, criterion, optimizer, epoch,
             #                   prefix)
 
 
-def validate(config, val_loader, val_dataset, model, criterion, output_dir,
+def validate(config, cfg_name, ckpt_num, val_loader, val_dataset, model, criterion, output_dir,
              tb_log_dir, writer_dict=None):
     batch_time = AverageMeter()
     losses = AverageMeter()
@@ -211,6 +215,7 @@ def validate(config, val_loader, val_dataset, model, criterion, output_dir,
                 _print_name_value(name_value, model_name)
         else:
             _print_name_value(name_values, model_name)
+            _print_logs_txt(config, cfg_name, ckpt_num, name_values, model_name)
 
         if writer_dict:
             writer = writer_dict['writer']
@@ -241,6 +246,45 @@ def validate(config, val_loader, val_dataset, model, criterion, output_dir,
             writer_dict['valid_global_steps'] = global_steps + 1
 
     return perf_indicator
+
+
+
+def _print_logs_txt(cfg, cfg_name, ckpt_num, name_value, full_arch_name):
+    root_output_dir = Path(cfg.OUTPUT_DIR)
+    # set up logger
+    if not root_output_dir.exists():
+        print('=> creating {}'.format(root_output_dir))
+        root_output_dir.mkdir()
+
+    dataset = cfg.DATASET.DATASET + '_' + cfg.DATASET.HYBRID_JOINTS_TYPE \
+        if cfg.DATASET.HYBRID_JOINTS_TYPE else cfg.DATASET.DATASET
+    dataset = dataset.replace(':', '_')
+    model = cfg.MODEL.NAME
+    cfg_name = os.path.basename(cfg_name).split('.')[0]
+
+    final_output_dir = root_output_dir / dataset / model / cfg_name /'validation.txt'
+    
+    names = name_value.keys()
+    values = name_value.values()
+    num_values = len(name_value)
+
+    with open(final_output_dir, 'a') as f:
+
+        if not os.path.exists(final_output_dir):
+            f.write(
+                '| Arch ' + ' | ckpt ' +
+                ' '.join(['| {}'.format(name) for name in names]) +
+                ' |' +'\n'
+            )
+
+            f.write('|---' * (num_values+1) + '|\n')
+
+
+        f.write(
+            '| ' + full_arch_name + ' | ' + str(ckpt_num).zfill(3) + ' '+
+            ' '.join(['| {:.3f}'.format(value) for value in values]) +
+            ' |\n'
+        )
 
 
 # markdown format output

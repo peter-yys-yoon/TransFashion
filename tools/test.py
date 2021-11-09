@@ -28,6 +28,7 @@ from core.loss import JointsMSELoss
 from core.function import validate
 from utils.utils import create_logger
 
+from pathlib import Path
 import dataset
 import models
 
@@ -66,9 +67,55 @@ def parse_args():
     return args
 
 
+
+def _print_logs_txt(cfg, cfg_name,ckpt_num, name_value, full_arch_name):
+    root_output_dir = Path(cfg.OUTPUT_DIR)
+    # set up logger
+    if not root_output_dir.exists():
+        print('=> creating {}'.format(root_output_dir))
+        root_output_dir.mkdir()
+
+    dataset = cfg.DATASET.DATASET + '_' + cfg.DATASET.HYBRID_JOINTS_TYPE \
+        if cfg.DATASET.HYBRID_JOINTS_TYPE else cfg.DATASET.DATASET
+    dataset = dataset.replace(':', '_')
+    model = cfg.MODEL.NAME
+    cfg_name = os.path.basename(cfg_name).split('.')[0]
+
+    final_output_dir = root_output_dir / dataset / model / cfg_name /'validation.txt'
+
+
+    num_values = len(name_value)
+    names=[ 'AP1', 'AP2','AP3', 'AP4']
+    values = [ 0.1 , 0.2, 0.3, 0.4]
+
+    with open(final_output_dir, 'a') as f:
+
+        if not os.path.exists(final_output_dir):
+            f.write(
+                '| Arch ' + ' | ckpt ' +
+                ' '.join(['| {}'.format(name) for name in names]) +
+                ' |' +'\n'
+            )
+
+            f.write('|---' * (num_values+1) + '|\n')
+
+
+        f.write(
+            '| ' + full_arch_name + ' | ' + str(ckpt_num).zfill(3) + ' '+
+            ' '.join(['| {:.3f}'.format(value) for value in values]) +
+            ' |\n'
+        )
+
+    print(final_output_dir)
+
+
 def main():
     args = parse_args()
     update_config(cfg, args)
+
+    _print_logs_txt(cfg, args.cfg, 8, [1,2,3],'transpose_r')
+    
+    
 
     logger, final_output_dir, tb_log_dir = create_logger(
         cfg, args.cfg, 'valid')
@@ -98,6 +145,7 @@ def main():
         # print(ckpt_state_dict['pos_embedding'])  # FOR UNSeen Resolutions
         # ckpt_state_dict.pop('pos_embedding') # FOR UNSeen Resolutions
         
+        ckpt_num = ckpt_state_dict['epoch']
         from collections import OrderedDict
         new_state_dict = OrderedDict()
         for k, v in ckpt_state_dict.items():
@@ -112,7 +160,9 @@ def main():
             final_output_dir, 'final_state.pth'
         )
         logger.info('=> loading model from {}'.format(model_state_file))
-        model.load_state_dict(torch.load(model_state_file))
+        final_state_dict = torch.load(model_state_file)
+        ckpt_num = final_state_dict['epoch']
+        model.load_state_dict()
     w, h = cfg.MODEL.IMAGE_SIZE
 
     ######### FOR UNSeen Resolutions  #########
@@ -155,7 +205,7 @@ def main():
     )
 
     # evaluate on validation set
-    validate(cfg, valid_loader, valid_dataset, model, criterion,
+    validate(cfg, args.cfg, ckpt_num, valid_loader, valid_dataset, model, criterion,
              final_output_dir, tb_log_dir)
 
 

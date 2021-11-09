@@ -182,7 +182,7 @@ class Deepfashion2Dataset(JointsDataset):
         """ self.root / annotations / person_keypoints_train2017.json """
         prefix = self.image_set # train, validation, test
 
-        # prefix += '_debug'
+        # prefix += '_debug'./unit_test.sh transpose_r TP_R_256x192_d256_h1024_enc3_mh8 016
         
         return os.path.join(
             self.root, 'annotations', prefix + '.json'
